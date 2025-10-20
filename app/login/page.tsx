@@ -1,29 +1,32 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import Link from 'next/link';
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function Login() {
-  // State to manage the form data
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const router = useRouter();
 
-  // Handle changes in the input fields
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  // Handle form submission
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log('Login form submitted:', formData);
-    // You would typically handle authentication logic here, e.g.,
-    // sending a request to your API to verify the user's credentials.
-  };
+    const { data, error } = await supabase
+      .from("user_tb")
+      .select("*")
+      .eq("email", email)
+      .eq("password", password)
+      .single();
 
+    if (error) {
+      alert("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
+      console.log(error);
+      return;
+    }
+
+    router.push("/dashboard/" + data.id);
+  };
   return (
     <main className="min-h-screen flex items-center justify-center bg-rose-100 p-4 sm:p-8">
       <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
@@ -36,30 +39,36 @@ export default function Login() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700"
+            >
               อีเมล
             </label>
             <input
               type="email"
               name="email"
               id="email"
-              value={formData.email}
-              onChange={handleChange}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
               className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700"
+            >
               รหัสผ่าน
             </label>
             <input
               type="password"
               name="password"
               id="password"
-              value={formData.password}
-              onChange={handleChange}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               required
               className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
             />
@@ -74,8 +83,11 @@ export default function Login() {
         </form>
 
         <p className="mt-8 text-center text-gray-500">
-          Don't have an account?{' '}
-          <Link href="/register" className="text-indigo-600 hover:text-indigo-800 font-semibold">
+          Don&apos;t have an account?{" "}
+          <Link
+            href="/register"
+            className="text-indigo-600 hover:text-indigo-800 font-semibold"
+          >
             Register here
           </Link>
         </p>

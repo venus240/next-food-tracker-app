@@ -1,45 +1,75 @@
-'use client';
+"use client";
 
-import React, { useState, ChangeEvent } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
+import React, { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function Register() {
-  const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    password: '',
-    gender: '',
-  });
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [image_file, setImageFile] = useState<File | null>(null);
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [gender, setGender] = useState("");
 
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const router = useRouter();
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result as string);
+        setPreviewImage(reader.result as string);
       };
       reader.readAsDataURL(file);
+      setImageFile(file);
     } else {
-      setImagePreview(null);
+      setPreviewImage(null);
     }
   };
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log('Form data submitted:', formData);
-    console.log('Image preview:', imagePreview);
-    // You would typically handle form submission logic here,
-    // such as sending data to an API.
-  };
+    let image_url = "";
+    if (image_file) {
+      const new_image_file_name = `${Date.now()}-${image_file.name}`;
 
+      const { data, error } = await supabase.storage
+        .from("user_bk")
+        .upload(new_image_file_name, image_file);
+      if (error) {
+        alert("เกิดข้อผิดพลาดในการอัปโหลดรูปภาพ");
+        console.log(error.message);
+        return;
+      } else {
+        const { data } = supabase.storage
+          .from("user_bk")
+          .getPublicUrl(new_image_file_name);
+        image_url = data.publicUrl;
+      }
+    }
+    const { data, error } = await supabase.from("user_tb").insert({
+      fullname: fullName,
+      email: email,
+      password: password,
+      gender: gender,
+      user_image_url: image_url,
+    });
+
+    if (error) {
+      console.log(error.message);
+      return;
+    } else {
+      alert("บันทึกข้อมูลเรียบร้อย");
+      setFullName("");
+      setEmail("");
+      setPassword("");
+      setGender("");
+      setPreviewImage(null);
+      image_url = "";
+      router.push("/login");
+    }
+  };
   return (
     <main className="min-h-screen flex items-center justify-center bg-red-100 p-4 sm:p-8">
       <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
@@ -52,45 +82,54 @@ export default function Register() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="fullName"
+              className="block text-sm font-medium text-gray-700"
+            >
               ชื่อ - นามสกุล
             </label>
             <input
               type="text"
               name="fullName"
               id="fullName"
-              value={formData.fullName}
-              onChange={handleChange}
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
               required
               className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
             />
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700"
+            >
               อีเมล
             </label>
             <input
               type="email"
               name="email"
               id="email"
-              value={formData.email}
-              onChange={handleChange}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
               className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700"
+            >
               รหัสผ่าน
             </label>
             <input
               type="password"
               name="password"
               id="password"
-              value={formData.password}
-              onChange={handleChange}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               required
               className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
             />
@@ -105,9 +144,8 @@ export default function Register() {
                 <input
                   type="radio"
                   name="gender"
-                  value="ชาย"
-                  onChange={handleChange}
-                  checked={formData.gender === 'ชาย'}
+                  value="male"
+                  onChange={(e) => setGender(e.target.value)}
                   className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
                 />
                 <span className="ml-2 text-sm text-gray-700">ชาย</span>
@@ -116,24 +154,25 @@ export default function Register() {
                 <input
                   type="radio"
                   name="gender"
-                  value="หญิง"
-                  onChange={handleChange}
-                  checked={formData.gender === 'หญิง'}
+                  value="female"
+                  onChange={(e) => setGender(e.target.value)}
                   className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
                 />
                 <span className="ml-2 text-sm text-gray-700">หญิง</span>
               </label>
             </div>
           </div>
-          
+
           <div className="relative">
-            <label htmlFor="imageUpload" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="imageUpload"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               รูป
             </label>
             <input
               type="file"
               id="imageUpload"
-              name="image"
               accept="image/*"
               onChange={handleImageChange}
               className="hidden"
@@ -146,10 +185,10 @@ export default function Register() {
             </label>
           </div>
 
-          {imagePreview && (
+          {previewImage && (
             <div className="mt-4 flex justify-center">
               <Image
-                src={imagePreview}
+                src={previewImage}
                 alt="Image Preview"
                 width={150}
                 height={150}
@@ -167,8 +206,11 @@ export default function Register() {
         </form>
 
         <p className="mt-8 text-center text-gray-500">
-          Already have an account?{' '}
-          <Link href="/login" className="text-indigo-600 hover:text-indigo-800 font-semibold">
+          Already have an account?{" "}
+          <Link
+            href="/login"
+            className="text-indigo-600 hover:text-indigo-800 font-semibold"
+          >
             Login here
           </Link>
         </p>
