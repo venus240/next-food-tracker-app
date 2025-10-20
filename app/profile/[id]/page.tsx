@@ -4,6 +4,7 @@ import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+
 export default function App() {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [image_file, setImageFile] = useState<File | null>(null);
@@ -15,6 +16,7 @@ export default function App() {
   const [gender, setGender] = useState("");
   const { id } = useParams();
   const router = useRouter();
+
   useEffect(() => {
     const fetchData = async () => {
       const { data, error } = await supabase
@@ -24,7 +26,7 @@ export default function App() {
         .single();
 
       if (error) {
-        alert("พบปัญหาในการดึงข้อมูลผู้ใช้");
+        alert("Error fetching user data");
         console.log(error.message);
         return;
       }
@@ -66,7 +68,7 @@ export default function App() {
             .from("user_bk")
             .remove([oldImageName]);
           if (removeError) {
-            console.log("ลบรูปเก่าไม่สำเร็จ:", removeError.message);
+            console.log("Failed to delete old image:", removeError.message);
           }
         }
       }
@@ -79,7 +81,7 @@ export default function App() {
         .upload(fileName, image_file);
 
       if (uploadError) {
-        alert("อัปโหลดรูปภาพไม่สำเร็จ");
+        alert("Failed to upload image");
         console.log(uploadError.message);
         return;
       }
@@ -103,25 +105,26 @@ export default function App() {
       .eq("id", id);
 
     if (updateError) {
-      alert("อัปเดตข้อมูลไม่สำเร็จ");
+      alert("Failed to update user information");
       console.log(updateError.message);
     } else {
-      alert("บันทึกข้อมูลเรียบร้อยแล้ว");
+      alert("Profile updated successfully");
       setOldImageFile(image_url);
       setImageFile(null);
       router.push("/dashboard/" + id);
     }
   };
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-rose-100 font-sans p-4">
       <div className="text-center p-8 bg-white rounded-xl shadow-lg w-full max-w-lg mx-auto">
         <h1 className="text-3xl font-bold text-gray-800 mb-6">
-          Change a new profile
+          Update Profile
         </h1>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="text-center">
             <p className="mb-2 text-sm font-medium text-gray-700">
-              Profile image
+              Profile Image
             </p>
             <div className="relative mx-auto mb-4 h-32 w-32 overflow-hidden rounded-full border-2 border-rose-500 shadow-md">
               {previewImage && (
@@ -138,7 +141,7 @@ export default function App() {
               htmlFor="profileImage"
               className="inline-flex cursor-pointer items-center justify-center rounded-full border border-rose-500 bg-rose-50 px-4 py-2 font-semibold text-rose-700 transition-colors hover:bg-rose-100"
             >
-              New Image
+              Upload New Image
             </label>
             <input
               id="profileImage"
@@ -148,12 +151,13 @@ export default function App() {
               className="sr-only"
             />
           </div>
+
           <div className="flex flex-col items-start">
             <label
               htmlFor="fullname"
               className="text-sm font-semibold text-gray-700 mb-1"
             >
-              Fullname
+              Full Name
             </label>
             <input
               id="fullname"
@@ -190,8 +194,8 @@ export default function App() {
               Password
             </label>
             <input
-              id="date"
-              type="date"
+              id="password"
+              type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required

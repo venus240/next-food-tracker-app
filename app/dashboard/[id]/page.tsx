@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabaseClient";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import Image from "next/image";
+
 type FoodTaskers = {
   id: string;
   foodname: string;
@@ -15,6 +16,7 @@ type FoodTaskers = {
   create_at: string;
   update_at: string;
 };
+
 type UserTackers = {
   id: string;
   fullname: string;
@@ -25,7 +27,7 @@ type UserTackers = {
   create_at: string;
   update_at: string;
 };
-// The main application component.
+
 export default function App() {
   const [foodTaskers, setFoodTaskers] = useState<FoodTaskers[]>([]);
   const [users, setUsers] = useState<UserTackers[]>([]);
@@ -39,7 +41,7 @@ export default function App() {
         .eq("user_id", id);
 
       if (error) {
-        alert("เกิดข้อผิดพลาดในการดึงข้อมูล");
+        alert("An error occurred while fetching food data.");
         console.log(error);
         return;
       }
@@ -47,13 +49,15 @@ export default function App() {
         setFoodTaskers(data as FoodTaskers[]);
       }
     };
+
     const getUsers = async () => {
       const { data, error } = await supabase
         .from("user_tb")
         .select("*")
         .eq("id", id);
+
       if (error) {
-        alert("เกิดข้อผิดพลาดในการดึงข้อมูล");
+        alert("An error occurred while fetching user data.");
         console.log(error);
         return;
       }
@@ -61,19 +65,21 @@ export default function App() {
         setUsers(data as UserTackers[]);
       }
     };
+
     getUsers();
     fetchData();
   }, [id]);
 
   const handleDelete = async (foodId: string, image_url: string) => {
-    if (confirm("คุณต้องการลบรายการอาหารนี้ใช่หรือไม่")) {
+    if (confirm("Are you sure you want to delete this food item?")) {
       if (image_url) {
         const image_name = image_url.split("/").pop();
         const { error } = await supabase.storage
           .from("task_bk")
           .remove([image_name as string]);
+
         if (error) {
-          alert("พบปัญหาในการลบรูปภาพ ออกจาก Storage");
+          alert("An error occurred while deleting the image from storage.");
           console.log(error.message);
           return;
         }
@@ -83,8 +89,9 @@ export default function App() {
         .from("food_tb")
         .delete()
         .eq("id", foodId);
+
       if (error) {
-        alert("พบปัญหาในการลบข้อมูล");
+        alert("An error occurred while deleting the record.");
         console.log(error.message);
         return;
       }
@@ -92,14 +99,12 @@ export default function App() {
       setFoodTaskers(foodTaskers.filter((food) => food.id !== foodId));
     }
   };
+
   return (
-    // Main container with a strawberry red background.
     <div className="min-h-screen p-8 bg-rose-100 font-sans text-gray-800">
       <div className="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-lg">
-        {/* Header section with title and Add Food button */}
         <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
           <h1 className="text-3xl font-bold">Food Tracker Dashboard</h1>
-          {/* Using a regular button here as Link from Next.js is not supported in this environment */}
           <div className="flex justify-center items-center gap-4">
             <Link href={"/addfood/" + id}>
               <button className="px-6 py-3 bg-rose-600 text-white font-semibold rounded-full shadow-md hover:bg-rose-700 transition duration-300">
@@ -111,7 +116,7 @@ export default function App() {
               <Link href={"/profile/" + user.id} key={user.id}>
                 <Image
                   src={user.user_image_url}
-                  alt="Food Tracker"
+                  alt="User Profile"
                   width={100}
                   height={100}
                   className="w-10 h-10 rounded-full object-cover"
@@ -120,7 +125,7 @@ export default function App() {
             ))}
           </div>
         </div>
-        {/* Food data table */}
+
         <div className="overflow-x-auto rounded-lg shadow-md">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-rose-50">

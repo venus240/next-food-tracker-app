@@ -20,13 +20,14 @@ export default function Login() {
       .single();
 
     if (error) {
-      alert("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
+      alert("Invalid email or password");
       console.log(error);
       return;
     }
 
     router.push("/dashboard/" + data.id);
   };
+
   return (
     <main className="min-h-screen flex items-center justify-center bg-rose-100 p-4 sm:p-8">
       <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
@@ -43,7 +44,7 @@ export default function Login() {
               htmlFor="email"
               className="block text-sm font-medium text-gray-700"
             >
-              อีเมล
+              Email
             </label>
             <input
               type="email"
@@ -61,7 +62,7 @@ export default function Login() {
               htmlFor="password"
               className="block text-sm font-medium text-gray-700"
             >
-              รหัสผ่าน
+              Password
             </label>
             <input
               type="password"

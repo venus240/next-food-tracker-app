@@ -15,6 +15,7 @@ type FoodTaskers = {
   created_at: string;
   update_at: string;
 };
+
 export default function App() {
   const [foodname, setFoodname] = useState("");
   const [meal, setMeal] = useState("");
@@ -45,12 +46,12 @@ export default function App() {
     let image_url = "";
     if (imageFile) {
       const new_image_file_name = `${Date.now()}-${imageFile.name}`;
-
       const { data, error } = await supabase.storage
         .from("food_bk")
         .upload(new_image_file_name, imageFile);
+
       if (error) {
-        alert("เกิดข้อผิดพลาดในการอัปโหลดรูปภาพ");
+        alert("An error occurred while uploading the image");
         console.log(error.message);
         return;
       } else {
@@ -70,11 +71,11 @@ export default function App() {
     });
 
     if (error) {
-      alert("เกิดข้อผิดพลาดในการเพิ่มรายการอาหาร");
+      alert("An error occurred while adding the food item");
       console.log(error);
       return;
     } else {
-      alert("รายการอาหารถูกเพิ่มเรียบร้อยแล้ว");
+      alert("The food item was added successfully");
       console.log(data);
       setFoodname("");
       setMeal("");

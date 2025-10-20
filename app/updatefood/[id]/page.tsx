@@ -24,7 +24,7 @@ export default function App() {
         .eq("id", id)
         .single();
       if (error) {
-        console.error("ไม่สามารถดึงข้อมูลผู้ใช้:", error.message);
+        console.error("Unable to fetch user:", error.message);
         return;
       }
       setUserId(data?.user_id);
@@ -37,7 +37,7 @@ export default function App() {
         .single();
 
       if (error) {
-        alert("พบปัญหาในการดึงข้อมูลงานเก่า");
+        alert("Error fetching food record");
         console.log(error.message);
         return;
       }
@@ -71,6 +71,7 @@ export default function App() {
     fetchData();
     getUser();
   }, [id]);
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -96,7 +97,7 @@ export default function App() {
             .from("food_bk")
             .remove([oldImageName]);
           if (removeError) {
-            console.log("ลบรูปเก่าไม่สำเร็จ:", removeError.message);
+            console.log("Failed to delete old image:", removeError.message);
           }
         }
       }
@@ -109,7 +110,7 @@ export default function App() {
         .upload(fileName, imageFile);
 
       if (uploadError) {
-        alert("อัปโหลดรูปภาพไม่สำเร็จ");
+        alert("Image upload failed");
         console.log(uploadError.message);
         return;
       }
@@ -133,11 +134,11 @@ export default function App() {
       .eq("id", id);
 
     if (updateError) {
-      alert("เกิดข้อผิดพลาดในการบันทึกการแก้ไขข้อมูล");
+      alert("Error updating food record");
       console.error(updateError.message);
       return;
     } else {
-      alert("บันทึกแก้ไขข้อมูลเรียบร้อย");
+      alert("Food record updated successfully");
       setOldImageFile(image_url);
       setImageFile(null);
       router.push(`/dashboard/${userId}`);
@@ -148,7 +149,7 @@ export default function App() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-rose-100 font-sans p-4">
       <div className="text-center p-8 bg-white rounded-xl shadow-lg w-full max-w-lg mx-auto">
         <h1 className="text-3xl font-bold text-gray-800 mb-6">
-          Add a New Food Item
+          Edit Food Item
         </h1>
         <form onSubmit={handleUploadAndUpdate} className="flex flex-col gap-4">
           <div className="flex flex-col items-start">
