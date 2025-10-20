@@ -13,10 +13,22 @@ export default function App() {
   const [meal, setMeal] = useState("");
   const [fooddate_at, setFooddate_at] = useState("");
   const [old_image_file, setOldImageFile] = useState<string>("");
-  const [userId, setUserId] = useState("");
   const router = useRouter();
+  const [userId, setUserId] = useState("");
 
   useEffect(() => {
+    const getUser = async () => {
+      const { data, error } = await supabase
+        .from("food_tb")
+        .select("user_id")
+        .eq("id", id)
+        .single();
+      if (error) {
+        console.error("ไม่สามารถดึงข้อมูลผู้ใช้:", error.message);
+        return;
+      }
+      setUserId(data?.user_id);
+    };
     const fetchData = async () => {
       const { data, error } = await supabase
         .from("food_tb")
@@ -57,6 +69,7 @@ export default function App() {
       }
     };
     fetchData();
+    getUser();
   }, [id]);
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -238,7 +251,7 @@ export default function App() {
             >
               Save
             </button>
-            <Link href={"/dashboard/" + id}>
+            <Link href={"/dashboard/" + userId}>
               <button
                 type="button"
                 className="flex-1 px-6 py-3 font-semibold text-lg text-rose-600 bg-white border-2 border-rose-600 rounded-full hover:bg-rose-50 transition duration-300 transform hover:scale-105 shadow-md"

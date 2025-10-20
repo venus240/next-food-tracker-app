@@ -13,7 +13,6 @@ export default function App() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [gender, setGender] = useState("");
-  const [userId, setUserId] = useState("");
   const { id } = useParams();
   const router = useRouter();
   useEffect(() => {
@@ -31,7 +30,6 @@ export default function App() {
       }
 
       if (data) {
-        setUserId(data.user_id);
         setFullName(data.fullname);
         setEmail(data.email);
         setPassword(data.password);
@@ -111,7 +109,7 @@ export default function App() {
       alert("บันทึกข้อมูลเรียบร้อยแล้ว");
       setOldImageFile(image_url);
       setImageFile(null);
-      router.push("/dashboard/" + userId);
+      router.push("/dashboard/" + id);
     }
   };
   return (
@@ -238,7 +236,7 @@ export default function App() {
             >
               Save
             </button>
-            <Link href={"/dashboard/" + userId}>
+            <Link href={"/dashboard/" + id}>
               <button
                 type="button"
                 className="flex-1 px-6 py-3 font-semibold text-lg text-rose-600 bg-white border-2 border-rose-600 rounded-full hover:bg-rose-50 transition duration-300 transform hover:scale-105 shadow-md"
